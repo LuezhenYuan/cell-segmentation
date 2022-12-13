@@ -3,6 +3,7 @@ import sys
 import numpy as np
 import cv2 as cv
 from skimage import io
+from scipy import ndimage
 def read_nd2_confocal(path):
     return np.max(nd2.imread(path), axis=0).astype(np.uint16)
 
@@ -62,16 +63,81 @@ import tensorflow as tf
 mesmer_model_pretrained = tf.keras.models.load_model(model_path)
 app = Mesmer(mesmer_model_pretrained)
 
-segmentation_predictions = app.predict(im, image_mpp=pixel_size)
+segmentation_predictions = app.predict(im, image_mpp=pixel_size, compartment = "both")
 
 # output the segmentation result
 
-label_img_shuffle = shuffle_labels_notcontinuous(segmentation_predictions[0,:,:,0])
-io.imsave(output_pre+'-cell-label.tif',label_img_shuffle.astype('uint16'))
+label_img_shuffle = shuffle_labels_notcontinuous(segmentation_predictions[0,:,:,1]) # nucleus
+
+label_img_shuffle_0 = shuffle_labels_notcontinuous(segmentation_predictions[0,:,:,0]) # cell
+
+io.imsave(output_pre+'-nucleus-label.tif',label_img_shuffle.astype('uint16'))
+io.imsave(output_pre+'-cell-label.tif',label_img_shuffle_0.astype('uint16'))
+io.imsave(output_pre+'-cell-img.tif',img.astype('uint16'))
+
+nucleus_outline = mask_to_contour_ImageJ_ROI(label_img_shuffle)
+with open(output_pre+'-nucleus-label-outlines_ImageJ.txt', 'w') as f:
+    f.write(nucleus_outline)
+
+cell_outline = mask_to_contour_ImageJ_ROI(label_img_shuffle_0)
+with open(output_pre+'-cell-label-outlines_ImageJ.txt', 'w') as f:
+    f.write(cell_outline)
+
+    
+## find the mapping from nucleus id to cell id:
+label_img_shuffle_list = np.unique(label_img_shuffle)
+label_img_shuffle_list = label_img_shuffle_list[label_img_shuffle_list!=0]
+nucleus_cell_label_map = np.zeros((len(label_img_shuffle_list),2),dtype='uint16')
+for i in range(len(label_img_shuffle_list)):
+    tmp_nucleus = label_img_shuffle == label_img_shuffle_list[i]
+    tmp_cell_label_list = np.unique(label_img_shuffle_0[tmp_nucleus])
+    tmp_cell_label_list = tmp_cell_label_list[tmp_cell_label_list!=0]
+    if len(tmp_cell_label_list) == 0:
+        # no mapping
+        nucleus_cell_label_map[i,:] = [label_img_shuffle_list[i],0]
+    elif len(tmp_cell_label_list) == 1:
+        nucleus_cell_label_map[i,:] = [label_img_shuffle_list[i],tmp_cell_label_list[0]]
+    else:
+        tmp_cell = np.multiply(label_img_shuffle_0,tmp_nucleus)
+        tmp_cell_area = ndimage.sum(tmp_nucleus,tmp_cell,tmp_cell_label_list)
+        nucleus_cell_label_map[i,:] = [label_img_shuffle_list[i],tmp_cell_label_list[tmp_cell_area.argmax()]]
+
+
+np.savetxt(output_pre+'-nucleus-cell-label-map.csv', nucleus_cell_label_map, delimiter=",", fmt="%d")
+
+"""
+## filter the cell segment (contain the nucleus)
+label_img_shuffle_list = np.unique(label_img_shuffle)
+label_img_shuffle_list = label_img_shuffle_list[label_img_shuffle_list!=0]
+cell_label = np.zeros_like(segmentation_predictions[0,:,:,0])
+for i in label_img_shuffle_list:
+    tmp_nucleus = label_img_shuffle == i
+    tmp_cell_label_list = np.unique(segmentation_predictions[0,:,:,0][tmp_nucleus])
+    tmp_cell_label_list = tmp_cell_label_list[tmp_cell_label_list!=0]
+    if len(tmp_cell_label_list) == 0:
+        # no cell segment for the current nucleus segment
+        # use the current nucleus segment as the cell segment
+        # may add expansion for this
+        cell_label[tmp_nucleus] = i # use the nucleus label
+    elif len(tmp_cell_label_list) == 1:
+        # one cell segment that contain current nucleus
+        cell_label[segmentation_predictions[0,:,:,0]==tmp_cell_label_list[0]] = i
+    else:
+        # more than one cell segment contain current nucleus
+        # merge into one cell segment
+        for j in tmp_cell_label_list:
+            cell_label[segmentation_predictions[0,:,:,0]==j] = i
+
+io.imsave(output_pre+'-nucleus-label.tif',label_img_shuffle.astype('uint16'))
+io.imsave(output_pre+'-cell-label.tif',cell_label.astype('uint16'))
 io.imsave(output_pre+'-cell-img.tif',img.astype('uint16'))
 ## save the outline (can be opened in ImageJ with https://github.com/Image-Py/cellpose-turbo/blob/master/imagej_roi_converter.py)
 
-result_nd_outline = mask_to_contour_ImageJ_ROI(label_img_shuffle)
+nucleus_outline = mask_to_contour_ImageJ_ROI(label_img_shuffle)
 with open(output_pre+'-nucleus-label-outlines_ImageJ.txt', 'w') as f:
-    f.write(result_nd_outline)
-    
+    f.write(nucleus_outline)
+
+cell_outline = mask_to_contour_ImageJ_ROI(cell_label)
+with open(output_pre+'-cell-label-outlines_ImageJ.txt', 'w') as f:
+    f.write(cell_outline)
+"""
