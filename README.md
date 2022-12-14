@@ -18,11 +18,11 @@ pip install deepcell
 
 To run the python code for cell segmentation:
 
-`python cell-segmentation.py ND2_FILE_PATH MODEL_PATH`
+`python cell-segmentation-deepcell.py ND2_FILE_PATH MODEL_PATH`
 
 ### Quantify intensity and shape features in ImageJ
 
-Macro code to run this analysis is `Macro-cell-nucleus-analysis.ijm`
+Macro code to run this analysis is `Macro-cell-nucleus-analysis-cell-nucleus.ijm`
 
 To get the outline of the segmented nucleus/cells using ImageJ ROI manager, check `imageJ_roi_converter.py`, which is downloaded from https://github.com/Image-Py/cellpose-turbo/blob/master/imagej_roi_converter.py
 
