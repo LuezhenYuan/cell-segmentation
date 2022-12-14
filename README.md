@@ -1,7 +1,7 @@
 # cell-segmentation
-cell-segmentation-mesmer
 
-## Cell segmentation with deepcell (mesmer model)
+
+## Cell segmentation in Tissue images with deepcell (mesmer model)
 
 Install the packages:
 
@@ -20,8 +20,25 @@ To run the python code for cell segmentation:
 
 `python cell-segmentation.py ND2_FILE_PATH MODEL_PATH`
 
-## Quantify intensity and shape features in ImageJ
+### Quantify intensity and shape features in ImageJ
 
 Macro code to run this analysis is `Macro-cell-nucleus-analysis.ijm`
 
 To get the outline of the segmented nucleus/cells using ImageJ ROI manager, check `imageJ_roi_converter.py`, which is downloaded from https://github.com/Image-Py/cellpose-turbo/blob/master/imagej_roi_converter.py
+
+## Cell segmentation in cell culture images with cellpose
+
+Install:
+
+```
+conda create --name cellpose python=3.8
+conda activate cellpose
+python -m pip install cellpose[gui]
+conda install -n cellpose numpy jupyter opencv scikit-image nd2 matplotlib
+```
+
+To run the python code for cell segmentation:
+
+`python cell-segmentation-cellpose.py ND2_FILE_PATH`
+
+To quantify intensity and shape features in ImageJ: `Macro-cell-nucleus-analysis-onlycells.ijm`
