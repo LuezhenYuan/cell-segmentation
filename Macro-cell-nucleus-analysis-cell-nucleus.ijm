@@ -2,6 +2,13 @@
 //Open fluorescent image
 //Open the outline of cell segment when the pop up window show
 //Then open the outline of nucleus segment when the pop up window show
+
+// Step 1: Change script_path into the folder pointing to the imageJ_roi_converter.py
+// Step 2: Change the img_path into the folder pointing to the fluorescent tif image containing nucleus and cytoskeleton channel. This is also the folder that the measurement result will be saved.
+// Step 3: Change the img_filename into the tif image you dragged in the imageJ. Please remove the ".tif" in the file name here.
+// Step 4: Run the script and it will pop up two windows sequentially to let you choose cell segmentation file and nucleus segmentation file. The first one to choose is the cell segmentation .txt file. The second one is the nucleus segmentation .txt file.
+// Remember to clear/close the ROI manager window after finishing one image analysis. Otherwise, the remaining ROI will be remembered and applied to the next image analysis.
+
 img_filename="1-cell-img" //"1-cell-img.tif"
 
 img_path="E:/PSI-backup/2022-12-13 Vanessa Tissue Image Collagen/M1W3_Col1_DAPI_s29_20X/M1_W_3_DAPI_Col1_s29_40X/M1_W_3_DAPI_Col1_s29_40X_001/"
@@ -23,5 +30,5 @@ selectWindow(img_filename+"-0001");
 roiManager("Show All without labels");
 roiManager("Measure");
 saveAs("Results", img_path+img_filename+"-nucleus-measure.csv");
-//roiManager("Delete");
-//run("Clear Results");
+roiManager("Delete");
+run("Clear Results");
