@@ -1,4 +1,4 @@
-# cell-segmentation
+# Cell and Nucleus Segmentation
 
 
 ## Cell segmentation in Tissue images with deepcell (mesmer model)
@@ -42,3 +42,20 @@ To run the python code for cell segmentation:
 `python cell-segmentation-cellpose.py ND2_FILE_PATH`
 
 To quantify intensity and shape features in ImageJ: `Macro-cell-nucleus-analysis-onlycells.ijm`
+
+## Nucleus segmentation in 2D or 3D 
+
+Install:
+
+```
+conda create --no-default-packages --name stardist_py3 python=3.9
+conda activate stardist_py3
+conda install -n stardist_py3 numpy scipy scikit-image
+conda install -c conda-forge csbdeep
+conda install -c conda-forge stardist
+conda install -c conda-forge nd2 # read Nikon image
+```
+
+To run the python code for 3D nucleus segmentation:
+
+`python nucleus-segmentation-3D-stardist.py ND2_FILE_PATH`
