@@ -59,3 +59,5 @@ conda install -c conda-forge nd2 # read Nikon image
 To run the python code for 3D nucleus segmentation:
 
 `python nucleus-segmentation-3D-stardist.py ND2_FILE_PATH`
+
+!! It seems like using stardist 3D doesn't give good segmentation for some samples!! An updated notebook `nucleus-segmentation-3D-stardist2D.ipynb` uses stardist2D and then connects the segmented nucleus in 3D. Some filtering steps (based on intensity and size) are included.
